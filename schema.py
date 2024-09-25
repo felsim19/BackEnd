@@ -34,3 +34,8 @@ class worker(bm):
 class workerlogin(bm):
     wname:str
     password:str
+    
+class collaborators(bm):
+    wname:str
+    document:str
+    wrole:Wrole    
