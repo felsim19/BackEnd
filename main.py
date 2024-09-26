@@ -5,6 +5,7 @@ from connection import create, get_db
 from model import base,companyRegistration, workerRegistrastion
 from schema import company, status, companylogin as cl, worker, workerlogin as wl,statusrole,collaborators as clb
 from fastapi.middleware.cors import CORSMiddleware
+import re
 
 
 app = FastAPI()
@@ -100,14 +101,9 @@ async def get_worker_count(company_id:str, db:Session=Depends(get_db)):
     count = db.query(workerRegistrastion).filter(workerRegistrastion.company == company_id).count()
     return {"count" : count }
 
-@app.get("/collaborators/{company_id}/workers", response_model=list[clb])  # Asegúrate de usar el nombre correcto del modelo
+@app.get("/collaborators/{company_id}/workers")
 async def get_collaborators( company_id:str, db:Session = Depends(get_db)):
     clb_list = db.query(workerRegistrastion).filter(workerRegistrastion.company == company_id).all()
-    print(f'colabores encontrados : {clb_list}')
-    clb_response = [
-        clb(wname=worker.wname, document=worker.document, wrole=worker.wrole) for worker in clb_list
-        
-    ]
-    return clb_response
+    return clb_list
     
     

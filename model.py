@@ -15,7 +15,7 @@ class companyRegistration(base):
     
 class workerRegistrastion(base):
     __tablename__ = "worker"
-    wname = Column(String(50), nullable=False, unique=True)
+    wname = Column(String(50), nullable=False)
     password = Column(String(80), nullable=False)
     document = Column(String(50), primary_key=True, nullable=False)
     company = Column(String(50), ForeignKey('company.company_user'), nullable=False)
