@@ -107,3 +107,17 @@ async def get_collaborators( company_id:str, db:Session = Depends(get_db)):
     return clb_list
     
     
+@app.delete("       ", response_model=status)
+async def delete_collaborators(company_id:str,wname:str, db:Session = Depends(get_db)):
+    # Buscar el trabajador por nombre y compañía
+    worker = db.query(workerRegistrastion).filter(
+        workerRegistrastion.company == company_id,
+        workerRegistrastion.wname == wname
+        ).first()
+    
+    if worker is None:
+            raise HTTPException(status_code=404,detail="Trabajador no encontrado")
+        
+    db.delete(worker)
+    db.commit()
+    return status(status="Trabajador Eliminado Recientemente")
