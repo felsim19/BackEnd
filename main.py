@@ -83,9 +83,10 @@ async def insertWorker(worker:worker, db:Session=Depends(get_db)):
     return status(status="Trabajador registrado exitosamente", msg="registro exitoso")
 
 
-@app.post("/loginWorker", response_model=statusrole)
-async def loginworker(worker_user:wl, db:Session=Depends(get_db)):
-    db_worker = db.query(workerRegistrastion).filter(workerRegistrastion.wname == worker_user.wname).first()
+@app.post("/loginWorker/{company_id}", response_model=statusrole)
+async def loginworker(company_id:str,worker_user:wl, db:Session=Depends(get_db)):
+    db_worker = db.query(workerRegistrastion).filter(workerRegistrastion.wname == worker_user.wname,
+                                                     workerRegistrastion.company == company_id).first()
     if db_worker is None:
         raise HTTPException(status_code=400, detail="nombre de usuario no existe")
     if not bcrypt.checkpw(worker_user.password.encode('utf-8'), db_worker.password.encode('utf-8')):
