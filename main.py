@@ -107,7 +107,7 @@ async def get_collaborators( company_id:str, db:Session = Depends(get_db)):
     return clb_list
     
     
-@app.delete("       ", response_model=status)
+@app.delete("/deleteCollaborators/{company_id}/{wname}", response_model=status)
 async def delete_collaborators(company_id:str,wname:str, db:Session = Depends(get_db)):
     # Buscar el trabajador por nombre y compañía
     worker = db.query(workerRegistrastion).filter(
