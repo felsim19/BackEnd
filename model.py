@@ -52,10 +52,10 @@ class phoneRegistrastion(base):
     brand_name = Column(String(60), ForeignKey('brands.name'),nullable=False)
     device = Column(String(50), nullable=False)
     details = Column(String(250), nullable=False)
+    individual_price = Column(Integer, nullable=False)
     repaired = Column(Boolean(),default=False)
     delivered = Column(Boolean(),default=False)
     date_delivered = Column(Date())
-    
     tbrand = relationship("BrandsRegistration", back_populates="tphone")
     tbill = relationship("billRegistrastion", back_populates="tphone")
     

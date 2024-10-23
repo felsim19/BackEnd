@@ -52,7 +52,7 @@ class phone(bm):
     brand_name:str
     device:str
     details:str
-    price:int
+    individual_price:int
 
 class bill(bm):
     total_price:float
@@ -62,3 +62,12 @@ class bill(bm):
     payment:float
     wname:str
     phones: list[phone]
+    
+
+class someBill(bm):
+    bill_number:str
+    client_name:str
+    entry_date:date
+    total_price:float
+    
+    

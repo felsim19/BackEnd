@@ -3,10 +3,10 @@ from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
 from connection import create, get_db
 from model import base,companyRegistration, workerRegistrastion,billRegistrastion, phoneRegistrastion, BrandsRegistration, devicesRegistration
-from schema import company, status, companylogin as cl, worker, workerlogin as wl,statusrole,collaborators as clb,bill, phone, brand , device
+from schema import company, status, companylogin as cl, worker, workerlogin as wl,statusrole,collaborators as clb,bill, phone, brand , device, someBill as sb
 from fastapi.middleware.cors import CORSMiddleware
 import re
-from sqlalchemy import desc 
+from sqlalchemy import desc, text 
 
 app = FastAPI()
 app.add_middleware(
@@ -247,10 +247,30 @@ async def createBillwithPhones(bill: bill, db: Session = Depends(get_db)):
             bill_number=newbill.bill_number,
             brand_name=phone.brand_name,  # Cambiado a brand_name
             device=phone.device,
-            details=phone.details
+            details=phone.details,
+            individual_price=phone.individual_price
         )
         db.add(new_phone)
         db.commit()
         db.refresh(new_phone)
         
     return status(status="Factura y dispositivos registrados exitosamente")      
+
+@app.get("/someDataOfBill", response_model=list[sb])
+async def someDataBill(db: Session = Depends(get_db)):
+    try:
+        query = text("""
+            SELECT bill_number, client_name, entry_date, total_price 
+            FROM bill
+        """)
+
+        result = db.execute(query).mappings().all()  # Aquí obtenemos las filas como diccionarios
+
+        if not result:
+            raise HTTPException(status_code=404, detail="No hay dispositivos registrados")
+
+        return result  # Ya no necesitas convertir manualmente
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    
