@@ -139,6 +139,46 @@ async def get_Devices(id_brands:str,db: Session = Depends(get_db)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     
+@app.get("/Allbills")
+async def getbills(db:Session=Depends(get_db)):
+    try:
+        bill_list = db.query(billRegistrastion).all()
+        if not bill_list:
+            raise HTTPException(status_code=404, detail="no hay facturas registradas")
+        return bill_list
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    
+@app.get("/bill/{bill_number}")
+async def getbill_number(bill_number:str,db:Session=Depends(get_db)):
+    try:
+        bill= db.query(billRegistrastion).filter(billRegistrastion.bill_number == bill_number).all()
+        if not bill:
+            raise HTTPException(status_code=404, detail="No hay facturas")
+        return bill
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    
+@app.get("/someDataOfBill", response_model=list[sb])
+async def someDataBill(db: Session = Depends(get_db)):
+    try:
+        query = text("""
+            SELECT bill_number, client_name, entry_date, total_price 
+            FROM bill
+        """)
+
+        result = db.execute(query).mappings().all()  # Aquí obtenemos las filas como diccionarios
+
+        if not result:
+            raise HTTPException(status_code=404, detail="No hay dispositivos registrados")
+
+        return result  # Ya no necesitas convertir manualmente
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    
+
+    
 @app.delete("/deleteCollaborators/{company_id}/{wname}", response_model=status)
 async def delete_collaborators(company_id:str,wname:str, db:Session = Depends(get_db)):
     # Buscar el trabajador por nombre y compañía
@@ -256,21 +296,5 @@ async def createBillwithPhones(bill: bill, db: Session = Depends(get_db)):
         
     return status(status="Factura y dispositivos registrados exitosamente")      
 
-@app.get("/someDataOfBill", response_model=list[sb])
-async def someDataBill(db: Session = Depends(get_db)):
-    try:
-        query = text("""
-            SELECT bill_number, client_name, entry_date, total_price 
-            FROM bill
-        """)
 
-        result = db.execute(query).mappings().all()  # Aquí obtenemos las filas como diccionarios
-
-        if not result:
-            raise HTTPException(status_code=404, detail="No hay dispositivos registrados")
-
-        return result  # Ya no necesitas convertir manualmente
-
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
     

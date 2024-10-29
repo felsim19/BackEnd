@@ -44,7 +44,7 @@ class billRegistrastion(base):
     tphone = relationship("phoneRegistrastion", back_populates="tbill")
     
 
-    
+     
 class phoneRegistrastion(base):
     __tablename__ = "phone"
     phone_ref = Column(String(20), primary_key=True, nullable=False)
