@@ -1,5 +1,6 @@
 import bcrypt
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends, HTTPException, File, UploadFile
+from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
 from connection import create, get_db
 from model import base,companyRegistration, workerRegistrastion,billRegistrastion, phoneRegistrastion, BrandsRegistration, devicesRegistration
@@ -11,13 +12,16 @@ from sqlalchemy import desc, text
 app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"]
 )
 
 base.metadata.create_all(bind=create)
+
+# Sirve los archivos de la carpeta 'companyImg'
+app.mount("/companyImg", StaticFiles(directory="companyImg"), name="companyImg")
 
 regex_mail = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
 
@@ -103,6 +107,17 @@ async def get_worker_count(company_id:str, db:Session=Depends(get_db)):
     count = db.query(workerRegistrastion).filter(workerRegistrastion.company == company_id).count()
     return {"count" : count }
 
+@app.get("/allcompany")
+async def get_worker_count( db:Session=Depends(get_db)): 
+    companis = db.query(companyRegistration).all()
+    return companis
+
+@app.get("/allcompany/{logeddcompany}")
+async def get_worker_count(logeddcompany:str ,db:Session=Depends(get_db)): 
+    companis = db.query(companyRegistration).filter(companyRegistration.company_user == logeddcompany).first()
+    return companis
+
+
 @app.get("/collaborators/{company_id}/workers")
 async def get_collaborators( company_id:str, db:Session = Depends(get_db)):
     clb_list = db.query(workerRegistrastion).filter(workerRegistrastion.company == company_id).all()
@@ -159,6 +174,16 @@ async def getbill_number(bill_number:str,db:Session=Depends(get_db)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     
+@app.get("/billphone/{bill_number}")
+async def getlistphone(bill_number:str, db:Session=Depends(get_db)):
+    try:
+        phone = db.query(phoneRegistrastion).filter(phoneRegistrastion.bill_number == bill_number).all()
+        if not phone:
+            raise HTTPException(status_code=404, detail="no hay dispositivos con esa factura")
+        return phone
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 @app.get("/someDataOfBill", response_model=list[sb])
 async def someDataBill(db: Session = Depends(get_db)):
     try:
@@ -296,5 +321,29 @@ async def createBillwithPhones(bill: bill, db: Session = Depends(get_db)):
         
     return status(status="Factura y dispositivos registrados exitosamente")      
 
+
+
+@app.put("/putCompanyImage/{loggedCompany}", response_model=status)
+async def putCompanyImage(loggedCompany:str, file: UploadFile = File(...) ,db:Session=Depends(get_db)):
+    #Bucar la compañia
+    try:
+        company = db.query(companyRegistration).filter(companyRegistration.company_user == loggedCompany).first()
+        image_content = await file.read()
+        url_image = f"companyImg/{file.filename}"  # Ajusta la ruta según tu necesidad
+        
+        
+        file_location = f"companyImg/{file.filename}"
+        with open(file_location, "wb") as buffer:
+            buffer.write(image_content)
+        # Actualizar el campo url_img en la compañía
+        company.url_image = url_image
+        db.commit()  # Guardar los cambios
+        db.refresh(company)  # Opcional: refrescar el objeto company con los nuevos datos
+
+        return status(status="Image updated successfully")
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    
 
     
