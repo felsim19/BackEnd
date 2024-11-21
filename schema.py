@@ -1,5 +1,6 @@
 from enum import Enum
 from pydantic import BaseModel as bm
+from datetime import date
 
 #Definicion del enum para wrole
 class Wrole(str, Enum):
@@ -38,4 +39,35 @@ class workerlogin(bm):
 class collaborators(bm):
     wname:str
     document:str
-    wrole:Wrole    
+    wrole:Wrole 
+
+class brand(bm):
+    name: str   
+    
+class device(bm):
+    id_brands:str
+    name:str
+    
+class phone(bm):
+    brand_name:str
+    device:str
+    details:str
+    individual_price:int
+
+class bill(bm):
+    total_price:float
+    due:float
+    client_name:str
+    client_phone:str
+    payment:float
+    wname:str
+    phones: list[phone]
+    
+
+class someBill(bm):
+    bill_number:str
+    client_name:str
+    entry_date:date
+    total_price:float
+    
+    
